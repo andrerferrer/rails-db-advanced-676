@@ -9,7 +9,7 @@ end
 
 def parse_items(klass, step)
   pluralized_name = klass.name.downcase.pluralize
-  puts "[#{step}/6] Parsing #{pluralized_name}..."
+  puts "[#{step}/5] Parsing #{pluralized_name}..."
   elements = []
   CSV.foreach("db/brazilian-ecommerce/olist_#{pluralized_name}_dataset.csv", headers: true) do |row|
     row["name"] = Faker::Company.name if klass == Seller
@@ -23,7 +23,7 @@ seller_ids_mapping   = parse_items(Seller,   2)
 customer_ids_mapping = parse_items(Customer, 3)
 GC.start
 
-puts "[4/6] Parsing orders..."
+puts "[4/5] Parsing orders..."
 orders = []
 CSV.foreach('db/brazilian-ecommerce/olist_orders_dataset.csv', headers: true) do |row|
   next if row["purchased_at"].nil? || row["purchased_at"] < "2017-03-01" || row["purchased_at"] > "2018-03-31"
@@ -36,7 +36,7 @@ order_ids_mapping = import_items(orders)
 GC.start
 
 
-puts "[5/6] Parsing order items..."
+puts "[5/5] Parsing order items..."
 order_items = []
 CSV.foreach('db/brazilian-ecommerce/olist_order_items_dataset.csv', headers: true) do |row|
   order_item = OrderItem.new(row.to_hash)
@@ -49,14 +49,5 @@ CSV.foreach('db/brazilian-ecommerce/olist_order_items_dataset.csv', headers: tru
 end
 import_items(order_items, false)
 GC.start
-
-puts "[6/6] Parsing payments..."
-order_payments = []
-CSV.foreach('db/brazilian-ecommerce/olist_order_payments_dataset.csv', headers: true) do |row|
-  order_payment = OrderPayment.new(row.to_hash)
-  order_payment.order_id = order_ids_mapping[row["order_csv_id"]]
-  order_payments << order_payment
-end
-import_items(order_payments, false)
 
 puts "Completed global import"
